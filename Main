@@ -1,0 +1,74 @@
+#include <Servo.h>
+int buttonPin = 13;
+int buttonState = 0;
+int prevButtonState = 0;
+
+int rosePin = 12;
+int roseState = 0;
+int prevRoseState = 0;
+
+int womanPin = 11;
+int womanState = 0;
+int prevWomanState = 0;
+boolean womanInPlace = false;
+
+int ledPin1 = 5;
+int ledPin2 = 6;
+int ledPin3 = 7;
+boolean ledBlinks = false;
+
+int clockAngle = 0;
+Servo princeServo;
+Servo clockServo;
+unsigned long timer;
+
+void setup()
+{
+  princeServo.attach(2);
+  clockServo.attach(3);
+  pinMode(buttonPin, INPUT_PULLUP);
+  pinMode(rosePin, INPUT_PULLUP);
+  pinMode(womanPin, INPUT_PULLUP);
+  Serial.begin(9600);
+}
+
+void loop()
+{
+  timer = millis();
+  buttonState = digitalRead(buttonPin);
+  roseState = digitalRead(rosePin);
+  womanState = digitalRead(womanPin);
+  
+  if(buttonState != prevButtonState){
+    if (buttonState == LOW)  womanInPlace = !womanInPlace;
+  }
+  if(roseState != prevRoseState) if(roseState == LOW) ledBlinks = !ledBlinks;
+  
+  if(womanState != prevWomanState)
+    if(womanState == LOW) princeServo.write(180);
+    else princeServo.write(0);
+    
+  if(ledBlinks) blinkLED();
+  if(womanInPlace) moveClock();
+  Serial.println(clockAngle);
+  clockServo.write(clockAngle);
+  
+  prevRoseState = roseState;
+  prevButtonState = buttonState;
+  prevWomanState = womanState;
+  
+  if(clockAngle > 170) clockAngle = 0;
+}
+
+void blinkLED(){
+  if(timer % 500 < 250) digitalWrite(ledPin1, HIGH);
+  else digitalWrite(ledPin1, LOW);
+  if(timer % 400 < 200) digitalWrite(ledPin2, HIGH);
+  else digitalWrite(ledPin2, LOW);
+  if(timer % 600 < 300) digitalWrite(ledPin3, HIGH);
+  else digitalWrite(ledPin3, LOW);
+}
+
+void moveClock(){
+  if(timer % 250 < 2) clockAngle += 10;
+}
